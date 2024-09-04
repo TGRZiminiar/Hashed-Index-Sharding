@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  # Config Servers
+  cfgsvr1:
+    image: mongo:latest
+    command: mongod --configsvr --replSet cfgrs --port 27017
+    volumes:
+      - cfgsvr1:/data/db
+
+  # Shard 1
+  shard1:
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard1rs --port 27017
+    volumes:
+      - shard1:/data/db
+
+  # Shard 2
+  shard2:
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard2rs --port 27017
+    volumes:
+      - shard2:/data/db
+
+  # Shard 3
+  shard3:
+    image: mongo:latest
+    command: mongod --shardsvr --replSet shard3rs --port 27017
+    volumes:
+      - shard3:/data/db
+
+  # Mongos Router
+  mongos:
+    image: mongo:latest
+    command: mongos --configdb cfgrs/cfgsvr1:27017 --bind_ip 0.0.0.0 --port 27017
+    ports:
+      - "27017:27017"
+    depends_on:
+      - cfgsvr1
+      - shard1
+      - shard2
+      - shard3
+
+volumes:
+  cfgsvr1:
+  shard1:
+  shard2:
+  shard3:
